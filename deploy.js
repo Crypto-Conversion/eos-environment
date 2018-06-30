@@ -4,7 +4,7 @@ const path = require('path')
 const eos = require('./eos')
 
 const source = async (directory, name) => {
-  const wastPath = path.join(process.cwd(), directory, name.concat('.wast'))
+  const wastPath = path.join(process.cwd(), directory, name.concat('.wasm'))
   const abiPath = path.join(process.cwd(), directory, name.concat('.abi'))
 
   const wast = new Promise(resolve => {
@@ -18,7 +18,7 @@ const source = async (directory, name) => {
 }
 
 const deploy = async (config) => {
-  const { directory, name, account, accountCreated, creator, owner, active, stake } = config
+  const { directory, name, account, accountCreated, creator, owner, active, stake, bytes } = config
 
   const [ wast, abi ] = await source(directory, name)
 
@@ -37,7 +37,7 @@ const deploy = async (config) => {
       tx.buyrambytes({
         payer: creator,
         receiver: account,
-        bytes: 8192
+        bytes: bytes
       })
       
       tx.delegatebw({
@@ -60,6 +60,8 @@ const deploy = async (config) => {
       account: account,
       abi: JSON.parse(abi)
     })
+  }).catch(e => {
+    console.error(e)
   })
 }
 
