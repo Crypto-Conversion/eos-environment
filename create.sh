@@ -80,7 +80,7 @@ const $1 = require('./$1')
 const config = require('./config.json')
 
 const options = {
-  authorization: `${config.creator}@active`,
+  authorization: config.creator + '@active',
   broadcast: true,
   sign: true
 }
