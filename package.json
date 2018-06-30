@@ -12,5 +12,8 @@
   "dependencies": {
     "binaryen": "37.0.0",
     "eosjs": "^15.0.3"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
   }
 }
