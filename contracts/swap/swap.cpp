@@ -36,7 +36,6 @@ namespace eosio {
             void apply(account_name contract, account_name action);
     };
 
-    //@abi action
     void swaponline::openSwap(
         account_name eosOwner,
         account_name btcOwner,
@@ -64,7 +63,6 @@ namespace eosio {
         });
     }
 
-    //@abi action
     void swaponline::withdraw(account_name swapID, checksum160& secret)
     {
         auto swapIterator = _swaps.find(swapID);
@@ -94,7 +92,6 @@ namespace eosio {
         ).send();
     }
 
-    //@abi action
     void swaponline::refund(account_name swapID)
     {
         auto swapIterator = _swaps.find(swapID);
@@ -121,7 +118,6 @@ namespace eosio {
         ).send();
     }
 
-    //@abi action
     void swaponline::processDeposit(const currency::transfer& transfer, account_name contract)
     {
         eosio_assert(transfer.to == contract, "Funds should be transfered to contract");
@@ -140,7 +136,6 @@ namespace eosio {
         });
     }
 
-    //@abi action
     void swaponline::apply(account_name contract, account_name action)
     {
         if(action == N(transfer)) {
