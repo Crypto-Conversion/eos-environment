@@ -145,7 +145,7 @@ namespace eosio {
 
         auto& thiscontract = *this;
         switch(action) {
-            EOSIO_API(swaponline, (open)(withdraw)(refund)(deposit))
+            EOSIO_API(swaponline, (open)(withdraw)(refund))
         };
     }
 }
