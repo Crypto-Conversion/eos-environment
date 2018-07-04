@@ -21,8 +21,8 @@
   }],
   "actions": [
       {
-        "name": "openSwap",
-        "type": "openSwap",
+        "name": "open",
+        "type": "open",
         "ricardian_contract": ""
       },
       {
@@ -36,11 +36,10 @@
         "ricardian_contract": ""
       },
       {
-        "name": "processDeposit",
-        "type": "processDeposit",
+        "name": "deposit",
+        "type": "deposit",
         "ricardian_contract": ""
-      },
-
+      }
   ],
   "tables": [{
     "name": "swap",

@@ -28,15 +28,15 @@ namespace eosio {
 
             const uint32_t TIMEOUT = 5*60;
 
-            void openSwap(account_name eosOwner, account_name btcOwner, account_name quantity, checksum160& secretHash);
+            void open(account_name eosOwner, account_name btcOwner, account_name quantity, checksum160& secretHash);
             void withdraw(account_name swapID, checksum160& secret);
             void refund(account_name swapID);
-            void processDeposit(const currency::transfer& t, account_name code);
+            void deposit(const currency::transfer& t, account_name code);
 
             void apply(account_name contract, account_name action);
     };
 
-    void swaponline::openSwap(
+    void swaponline::open(
         account_name eosOwner,
         account_name btcOwner,
         account_name quantity,
@@ -118,7 +118,7 @@ namespace eosio {
         ).send();
     }
 
-    void swaponline::processDeposit(const currency::transfer& transfer, account_name contract)
+    void swaponline::deposit(const currency::transfer& transfer, account_name contract)
     {
         eosio_assert(transfer.to == contract, "Funds should be transfered to contract");
 
@@ -139,13 +139,21 @@ namespace eosio {
     void swaponline::apply(account_name contract, account_name action)
     {
         if(action == N(transfer)) {
-            processDeposit(unpack_action_data<currency::transfer>(), contract);
+            deposit(unpack_action_data<currency::transfer>(), contract);
             return;
         }
 
         auto& thiscontract = *this;
         switch(action) {
-            EOSIO_API(swaponline, (openSwap)(withdraw)(refund)(processDeposit))
+            EOSIO_API(swaponline, (open)(withdraw)(refund)(deposit))
         };
+    }
+}
+
+extern "C" {
+    [[noreturn]] void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+        eosio::swaponline swap(receiver);
+        swap.apply(code, action);
+        eosio_exit(0);
     }
 }

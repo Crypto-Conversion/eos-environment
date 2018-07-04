@@ -16,6 +16,7 @@
  (type $FUNCSIG$viii (func (param i32 i32 i32)))
  (type $FUNCSIG$vijii (func (param i32 i64 i32 i32)))
  (type $FUNCSIG$i (func (result i32)))
+ (type $FUNCSIG$vi (func (param i32)))
  (import "env" "abort" (func $abort))
  (import "env" "action_data_size" (func $action_data_size (result i32)))
  (import "env" "assert_ripemd160" (func $assert_ripemd160 (param i32 i32 i32)))
@@ -30,6 +31,7 @@
  (import "env" "db_store_i64" (func $db_store_i64 (param i64 i64 i64 i64 i32 i32) (result i32)))
  (import "env" "db_update_i64" (func $db_update_i64 (param i32 i64 i32 i32)))
  (import "env" "eosio_assert" (func $eosio_assert (param i32 i32)))
+ (import "env" "eosio_exit" (func $eosio_exit (param i32)))
  (import "env" "memcpy" (func $memcpy (param i32 i32 i32) (result i32)))
  (import "env" "memset" (func $memset (param i32 i32 i32) (result i32)))
  (import "env" "read_action_data" (func $read_action_data (param i32 i32) (result i32)))
@@ -37,7 +39,7 @@
  (import "env" "require_auth2" (func $require_auth2 (param i64 i64)))
  (import "env" "send_inline" (func $send_inline (param i32 i32)))
  (table 5 5 anyfunc)
- (elem (i32.const 0) $__wasm_nullptr $_ZN5eosio10swaponline14processDepositERKNS_8currency8transferEy $_ZN5eosio10swaponline8withdrawEyR11checksum160 $_ZN5eosio10swaponline8openSwapEyyyR11checksum160 $_ZN5eosio10swaponline6refundEy)
+ (elem (i32.const 0) $__wasm_nullptr $_ZN5eosio10swaponline6refundEy $_ZN5eosio10swaponline7depositERKNS_8currency8transferEy $_ZN5eosio10swaponline4openEyyyR11checksum160 $_ZN5eosio10swaponline8withdrawEyR11checksum160)
  (memory $0 1)
  (data (i32.const 4) "\10g\00\00")
  (data (i32.const 16) "cannot create objects in table of another contract\00")
@@ -81,11 +83,12 @@
  (export "_ZneRK11checksum160S1_" (func $_ZneRK11checksum160S1_))
  (export "now" (func $now))
  (export "_ZN5eosio12require_authERKNS_16permission_levelE" (func $_ZN5eosio12require_authERKNS_16permission_levelE))
- (export "_ZN5eosio10swaponline8openSwapEyyyR11checksum160" (func $_ZN5eosio10swaponline8openSwapEyyyR11checksum160))
+ (export "_ZN5eosio10swaponline4openEyyyR11checksum160" (func $_ZN5eosio10swaponline4openEyyyR11checksum160))
  (export "_ZN5eosio10swaponline8withdrawEyR11checksum160" (func $_ZN5eosio10swaponline8withdrawEyR11checksum160))
  (export "_ZN5eosio10swaponline6refundEy" (func $_ZN5eosio10swaponline6refundEy))
- (export "_ZN5eosio10swaponline14processDepositERKNS_8currency8transferEy" (func $_ZN5eosio10swaponline14processDepositERKNS_8currency8transferEy))
+ (export "_ZN5eosio10swaponline7depositERKNS_8currency8transferEy" (func $_ZN5eosio10swaponline7depositERKNS_8currency8transferEy))
  (export "_ZN5eosio10swaponline5applyEyy" (func $_ZN5eosio10swaponline5applyEyy))
+ (export "apply" (func $apply))
  (export "malloc" (func $malloc))
  (export "free" (func $free))
  (export "_ZNSt3__15stollERKNS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEEPji" (func $_ZNSt3__15stollERKNS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEEPji))
@@ -144,7 +147,7 @@
    )
   )
  )
- (func $_ZN5eosio10swaponline8openSwapEyyyR11checksum160 (type $FUNCSIG$vijjji) (param $0 i32) (param $1 i64) (param $2 i64) (param $3 i64) (param $4 i32)
+ (func $_ZN5eosio10swaponline4openEyyyR11checksum160 (type $FUNCSIG$vijjji) (param $0 i32) (param $1 i64) (param $2 i64) (param $3 i64) (param $4 i32)
   (local $5 i32)
   (local $6 i32)
   (local $7 i32)
@@ -357,7 +360,7 @@
    (get_local $7)
    (i32.const 0)
   )
-  (call $_ZZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE7emplaceIZNS1_8openSwapEyyyR11checksum160E3$_0EENS3_14const_iteratorEyOT_ENKUlRS9_E_clINS3_4itemEEEDaSB_
+  (call $_ZZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE7emplaceIZNS1_4openEyyyR11checksum160E3$_0EENS3_14const_iteratorEyOT_ENKUlRS9_E_clINS3_4itemEEEDaSB_
    (i32.add
     (get_local $8)
     (i32.const 64)
@@ -861,7 +864,7 @@
   )
   (get_local $6)
  )
- (func $_ZZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE7emplaceIZNS1_8openSwapEyyyR11checksum160E3$_0EENS3_14const_iteratorEyOT_ENKUlRS9_E_clINS3_4itemEEEDaSB_ (param $0 i32) (param $1 i32)
+ (func $_ZZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE7emplaceIZNS1_4openEyyyR11checksum160E3$_0EENS3_14const_iteratorEyOT_ENKUlRS9_E_clINS3_4itemEEEDaSB_ (param $0 i32) (param $1 i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -6099,7 +6102,7 @@
   )
   (unreachable)
  )
- (func $_ZN5eosio10swaponline14processDepositERKNS_8currency8transferEy (type $FUNCSIG$viij) (param $0 i32) (param $1 i32) (param $2 i64)
+ (func $_ZN5eosio10swaponline7depositERKNS_8currency8transferEy (type $FUNCSIG$viij) (param $0 i32) (param $1 i32) (param $2 i64)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -6309,7 +6312,7 @@
    (get_local $7)
    (i32.const 576)
   )
-  (call $_ZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE6modifyIZNS1_14processDepositERKNS_8currency8transferEyE3$_3EEvRKS2_yOT_
+  (call $_ZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE6modifyIZNS1_7depositERKNS_8currency8transferEyE3$_3EEvRKS2_yOT_
    (get_local $5)
    (get_local $6)
    (get_local $2)
@@ -6326,7 +6329,7 @@
    )
   )
  )
- (func $_ZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE6modifyIZNS1_14processDepositERKNS_8currency8transferEyE3$_3EEvRKS2_yOT_ (param $0 i32) (param $1 i32) (param $2 i64) (param $3 i32)
+ (func $_ZN5eosio11multi_indexILy14343208349175119872ENS_10swaponline4swapEJEE6modifyIZNS1_7depositERKNS_8currency8transferEyE3$_3EEvRKS2_yOT_ (param $0 i32) (param $1 i32) (param $2 i64) (param $3 i32)
   (local $4 i64)
   (local $5 i32)
   (local $6 i32)
@@ -6728,7 +6731,7 @@
       (i32.const 64)
      )
     )
-    (call $_ZN5eosio10swaponline14processDepositERKNS_8currency8transferEy
+    (call $_ZN5eosio10swaponline7depositERKNS_8currency8transferEy
      (get_local $0)
      (i32.add
       (get_local $9)
@@ -6762,41 +6765,41 @@
       (br_if $label$10
        (i64.gt_s
         (get_local $2)
-        (i64.const -5001342339331915777)
+        (i64.const -2039333636196532225)
        )
       )
       (br_if $label$9
        (i64.eq
         (get_local $2)
-        (i64.const -6533262423263019008)
+        (i64.const -6533262907872903168)
        )
       )
       (br_if $label$6
        (i64.ne
         (get_local $2)
-        (i64.const -5915331450297292402)
+        (i64.const -5001342339331915776)
        )
       )
-      (i32.store offset=36
+      (i32.store offset=44
        (get_local $9)
        (i32.const 0)
       )
-      (i32.store offset=32
+      (i32.store offset=40
        (get_local $9)
        (i32.const 1)
       )
-      (i64.store offset=24 align=4
+      (i64.store offset=16 align=4
        (get_local $9)
-       (i64.load offset=32
+       (i64.load offset=40
         (get_local $9)
        )
       )
       (drop
-       (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JRKNS_8currency8transferEyEEEbPT_MT0_FvDpT1_E
+       (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JyEEEbPT_MT0_FvDpT1_E
         (get_local $0)
         (i32.add
          (get_local $9)
-         (i32.const 24)
+         (i32.const 16)
         )
        )
       )
@@ -6805,35 +6808,35 @@
      (br_if $label$8
       (i64.eq
        (get_local $2)
-       (i64.const -5001342339331915776)
+       (i64.const -2039333636196532224)
       )
      )
      (br_if $label$6
       (i64.ne
        (get_local $2)
-       (i64.const -2039333636196532224)
+       (i64.const 5380477996647841792)
       )
      )
-     (i32.store offset=52
+     (i32.store offset=36
       (get_local $9)
       (i32.const 0)
      )
-     (i32.store offset=48
+     (i32.store offset=32
       (get_local $9)
       (i32.const 2)
      )
-     (i64.store offset=8 align=4
+     (i64.store offset=24 align=4
       (get_local $9)
-      (i64.load offset=48
+      (i64.load offset=32
        (get_local $9)
       )
      )
      (drop
-      (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JyR11checksum160EEEbPT_MT0_FvDpT1_E
+      (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JRKNS_8currency8transferEyEEEbPT_MT0_FvDpT1_E
        (get_local $0)
        (i32.add
         (get_local $9)
-        (i32.const 8)
+        (i32.const 24)
        )
       )
      )
@@ -6861,26 +6864,26 @@
     )
     (br $label$6)
    )
-   (i32.store offset=44
+   (i32.store offset=52
     (get_local $9)
     (i32.const 0)
    )
-   (i32.store offset=40
+   (i32.store offset=48
     (get_local $9)
     (i32.const 4)
    )
-   (i64.store offset=16 align=4
+   (i64.store offset=8 align=4
     (get_local $9)
-    (i64.load offset=40
+    (i64.load offset=48
      (get_local $9)
     )
    )
    (drop
-    (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JyEEEbPT_MT0_FvDpT1_E
+    (call $_ZN5eosio14execute_actionINS_10swaponlineES1_JyR11checksum160EEEbPT_MT0_FvDpT1_E
      (get_local $0)
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 8)
      )
     )
    )
@@ -9266,6 +9269,72 @@
     (i32.const 20)
    )
   )
+ )
+ (func $apply (param $0 i64) (param $1 i64) (param $2 i64)
+  (local $3 i32)
+  (i32.store offset=4
+   (i32.const 0)
+   (tee_local $3
+    (i32.sub
+     (i32.load offset=4
+      (i32.const 0)
+     )
+     (i32.const 64)
+    )
+   )
+  )
+  (i64.store
+   (i32.add
+    (get_local $3)
+    (i32.const 24)
+   )
+   (get_local $0)
+  )
+  (i64.store
+   (i32.add
+    (get_local $3)
+    (i32.const 32)
+   )
+   (i64.const -1)
+  )
+  (i64.store
+   (i32.add
+    (get_local $3)
+    (i32.const 40)
+   )
+   (i64.const 0)
+  )
+  (i32.store
+   (i32.add
+    (get_local $3)
+    (i32.const 48)
+   )
+   (i32.const 0)
+  )
+  (i64.store offset=16
+   (get_local $3)
+   (get_local $0)
+  )
+  (i64.store offset=8
+   (get_local $3)
+   (get_local $0)
+  )
+  (i32.store offset=56
+   (get_local $3)
+   (i32.const 300)
+  )
+  (call $_ZN5eosio10swaponline5applyEyy
+   (i32.add
+    (get_local $3)
+    (i32.const 8)
+   )
+   (get_local $1)
+   (get_local $2)
+  )
+  (call $eosio_exit
+   (i32.const 0)
+  )
+  (unreachable)
  )
  (func $malloc (param $0 i32) (result i32)
   (call $_ZN5eosio14memory_manager6mallocEm
