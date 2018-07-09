@@ -9,7 +9,11 @@ const eos = Eos({
 
   keyProvider: config.keyProvider,
   httpEndpoint: config.httpEndpoint,
-  chainId: config.chainId
+  chainId: config.chainId,
+
+  logger: {
+    log: console.log
+  }
 })
 
 module.exports = eos

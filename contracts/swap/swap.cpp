@@ -7,7 +7,7 @@ namespace eosio {
         private:
             struct swap
             {
-                account_name swapID;
+                uint64_t swapID;
                 account_name eosOwner;
                 account_name btcOwner;
                 uint64_t requiredDeposit;
@@ -16,7 +16,7 @@ namespace eosio {
                 checksum160 secret;
                 uint8_t status = 0; // 0 = open, 1 = active, 2 = withdrawn, 3 = refunded
 
-                account_name primary_key() const { return swapID; }
+                uint64_t primary_key() const { return swapID; }
             };
 
             multi_index<N(swap), swap> _swaps;
@@ -29,8 +29,8 @@ namespace eosio {
             const uint32_t TIMEOUT = 5*60;
 
             void open(account_name eosOwner, account_name btcOwner, account_name quantity, checksum160& secretHash);
-            void withdraw(account_name swapID, checksum160& secret);
-            void refund(account_name swapID);
+            void withdraw(uint64_t swapID, checksum160& secret);
+            void refund(uint64_t swapID);
             void deposit(const currency::transfer& t, account_name code);
 
             void apply(account_name contract, account_name action);
@@ -39,7 +39,7 @@ namespace eosio {
     void swaponline::open(
         account_name eosOwner,
         account_name btcOwner,
-        account_name quantity,
+        uint64_t quantity,
         checksum160& secretHash
     )
     {
@@ -63,7 +63,7 @@ namespace eosio {
         });
     }
 
-    void swaponline::withdraw(account_name swapID, checksum160& secret)
+    void swaponline::withdraw(uint64_t swapID, checksum160& secret)
     {
         auto swapIterator = _swaps.find(swapID);
         eosio_assert(swapIterator != _swaps.end(), "Swap not found");
@@ -92,7 +92,7 @@ namespace eosio {
         ).send();
     }
 
-    void swaponline::refund(account_name swapID)
+    void swaponline::refund(uint64_t swapID)
     {
         auto swapIterator = _swaps.find(swapID);
 
@@ -120,12 +120,13 @@ namespace eosio {
 
     void swaponline::deposit(const currency::transfer& transfer, account_name contract)
     {
-        eosio_assert(transfer.to == contract, "Funds should be transfered to contract");
+        if(transfer.from == contract)
+            return;
 
         auto swapIterator = _swaps.find(stoll(transfer.memo));
 
         eosio_assert(swapIterator != _swaps.end(), "Swap not found");
-        eosio_assert(swapIterator->status == 1, "Swap has been funded already");
+        eosio_assert(swapIterator->status == 0, "Swap had been processed already");
 
         _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
             item.currentDeposit += transfer.quantity.amount;

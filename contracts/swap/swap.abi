@@ -5,11 +5,12 @@
       "type": "name"
     }
   ],
-  "structs": [{
+  "structs": [
+  {
     "name": "swap",
     "base": "",
     "fields": [
-        {"name":"swapID", "type":"account_name"},
+        {"name":"swapID", "type":"uint64"},
         {"name":"eosOwner", "type":"account_name"},
         {"name":"btcOwner", "type":"account_name"},
         {"name":"requiredDeposit", "type":"uint64"},
@@ -18,7 +19,53 @@
         {"name":"secret", "type":"checksum160"},
         {"name":"status", "type":"uint8"}
     ]
-  }],
+  },
+  {
+    "name": "open",
+    "base": "",
+    "fields": [
+      {"name":"eosOwner", "type": "account_name"},
+      {"name":"btcOwner", "type": "account_name"},
+      {"name":"quantity", "type": "uint64"},
+      {"name":"secretHahs", "type": "checksum160"}
+    ]
+  },
+  {
+    "name": "withdraw",
+    "base": "",
+    "fields": [
+       {"name":"swapID", "type": "uint64"},
+       {"name":"secret", "type": "checksum160"}
+    ]
+  },
+  {
+    "name": "refund",
+    "base": "",
+    "fields": [
+       {"name": "swapID", "type": "uint64"}
+    ]
+  },
+
+
+  {
+    "name": "transfer",
+    "base": "",
+    "fields": [
+      {"name":"from", "type":"account_name"},
+      {"name":"to", "type":"account_name"},
+      {"name":"quantity", "type":"asset"},
+      {"name":"memo", "type":"string"}
+    ]
+  },
+  {
+    "name": "deposit",
+    "base": "transfer",
+    "fields": [
+       {"name": "contract", "type": "account_name"}
+    ]
+  }
+
+  ],
   "actions": [
       {
         "name": "open",
@@ -46,7 +93,7 @@
     "type": "swap",
     "index_type": "i64",
     "key_names": ["swapID"],
-    "key_types": ["account_name"]
+    "key_types": ["uint64"]
   }],
   "ricardian_clauses": [],
   "error_messages": [],

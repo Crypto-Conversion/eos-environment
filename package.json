@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "binaryen": "37.0.0",
-    "eosjs": "^15.0.3"
+    "eosjs": "^15.0.3",
+    "bitcoinjs-lib": "^3.3.2"
   },
   "devDependencies": {
     "mocha": "^5.2.0"
