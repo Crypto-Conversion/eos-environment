@@ -27,7 +27,7 @@
       {"name":"eosOwner", "type": "account_name"},
       {"name":"btcOwner", "type": "account_name"},
       {"name":"quantity", "type": "uint64"},
-      {"name":"secretHahs", "type": "checksum160"}
+      {"name":"secretHash", "type": "checksum160"}
     ]
   },
   {
