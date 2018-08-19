@@ -47,7 +47,7 @@ namespace eosio {
 
         for (auto& item : _swaps) {
             if(item.eosOwner == eosOwner && item.btcOwner == btcOwner) {
-                eosio_assert(item.status == 3 || item.status == 4,
+                eosio_assert(item.status == 3 || item.status == 2,
                 "Between participants already exists open swap");
             }
         }
