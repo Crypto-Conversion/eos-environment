@@ -1,6 +1,7 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/currency.hpp>
 #include <eosiolib/crypto.h>
+#include <eosiolib/asset.hpp>
 
 namespace eosio {
     class swaponline : public contract {
@@ -10,26 +11,29 @@ namespace eosio {
                 uint64_t swapID;
                 account_name eosOwner;
                 account_name btcOwner;
-                uint64_t requiredDeposit;
-                uint64_t currentDeposit;
-                checksum160 secretHash;
-                checksum160 secret;
+                asset requiredDeposit;
+                asset currentDeposit;
+                checksum256 secretHash;
+                checksum256 secret;
                 uint8_t status = 0; // 0 = open, 1 = active, 2 = withdrawn, 3 = refunded
 
                 uint64_t primary_key() const { return swapID; }
             };
 
             multi_index<N(swap), swap> _swaps;
+
+            account_name _this_contract;
         public:
             swaponline(account_name self)
             : contract(self),
-            _swaps(self, self)
+            _swaps(self, self),
+            _this_contract(self)
             {}
 
             const uint32_t TIMEOUT = 5*60;
 
-            void open(account_name eosOwner, account_name btcOwner, account_name quantity, checksum160& secretHash);
-            void withdraw(uint64_t swapID, checksum160& secret);
+            void open(account_name eosOwner, account_name btcOwner, asset quantity, checksum256& secretHash);
+            void withdraw(uint64_t swapID, checksum256& secret);
             void refund(uint64_t swapID);
             void deposit(const currency::transfer& t, account_name code);
 
@@ -39,8 +43,8 @@ namespace eosio {
     void swaponline::open(
         account_name eosOwner,
         account_name btcOwner,
-        uint64_t quantity,
-        checksum160& secretHash
+        asset quantity,
+        checksum256& secretHash
     )
     {
         require_auth(eosOwner);
@@ -57,13 +61,14 @@ namespace eosio {
                 item.eosOwner = eosOwner;
                 item.btcOwner = btcOwner;
                 item.requiredDeposit = quantity;
-                item.currentDeposit = 0;
+                item.currentDeposit = asset(0, symbol_type(S(4, EOS)));
                 item.secretHash = secretHash;
                 item.status = 0;
         });
     }
 
-    void swaponline::withdraw(uint64_t swapID, checksum160& secret)
+    //@abi action
+    void swaponline::withdraw(uint64_t swapID, checksum256& secret)
     {
         auto swapIterator = _swaps.find(swapID);
         eosio_assert(swapIterator != _swaps.end(), "Swap not found");
@@ -74,22 +79,22 @@ namespace eosio {
         eosio_assert(swapIterator->status != 2, "Funds was already withdrawn");
         eosio_assert(swapIterator->status != 3, "Funds was refunded");
 
-        assert_ripemd160((char*)&secret, sizeof(secret), (const checksum160*)&swapIterator->secretHash);
+        assert_sha256((char*)&secret, sizeof(secret), (const checksum256*)&swapIterator->secretHash);
 
-        account_name recipient = swapIterator->btcOwner;
-        uint64_t quantity = swapIterator->currentDeposit;
-
-        _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
-            item.status = 2;
-            item.secret = secret;
-            item.currentDeposit = 0;
-        });
+        const account_name recipient = swapIterator->btcOwner;
+        const asset& quantity = swapIterator->currentDeposit;
 
         action(
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
             std::make_tuple(_self, recipient, quantity, std::string(""))
         ).send();
+
+        _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
+            item.status = 2;
+            item.secret = secret;
+            item.currentDeposit = asset(0, symbol_type(S(4, EOS)));
+        });
     }
 
     void swaponline::refund(uint64_t swapID)
@@ -104,23 +109,23 @@ namespace eosio {
         require_auth(swapIterator->eosOwner);
 
         account_name recipient = swapIterator->eosOwner;
-        uint64_t quantity = swapIterator->currentDeposit;
-
-        _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
-            item.status = 3;
-            item.currentDeposit = 0;
-        });
+        const asset& quantity = swapIterator->currentDeposit;
 
         action(
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
             std::make_tuple(_self, recipient, quantity, std::string(""))
         ).send();
+
+        _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
+            item.status = 3;
+            item.currentDeposit = asset(0, symbol_type(S(4, EOS)));
+        });
     }
 
     void swaponline::deposit(const currency::transfer& transfer, account_name contract)
     {
-        if(transfer.from == contract)
+        if(transfer.from == _this_contract)
             return;
 
         auto swapIterator = _swaps.find(stoll(transfer.memo));
@@ -129,7 +134,7 @@ namespace eosio {
         eosio_assert(swapIterator->status == 0, "Swap had been processed already");
 
         _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
-            item.currentDeposit += transfer.quantity.amount;
+            item.currentDeposit += transfer.quantity;
 
             if(item.currentDeposit >= item.requiredDeposit) {
                 item.status = 1;
