@@ -1,4 +1,4 @@
-const { binToHex, hexToBin, instantiateSha256 } = require("bitcoin-ts")
+const bitcoin = require("bitcoinjs-lib")
 
 const assert = require('assert')
 const eos = require('../eos')
@@ -6,7 +6,7 @@ const swap = require('./swap')
 const config = require('./config.json')
 
 const eosOwner = 'sevenflash'
-const btcOwner = 'sevenflash53'
+const btcOwner = 'sevenflash52'
 
 const options = {
   authorization: [`${eosOwner}@active`, `${btcOwner}@active`],
@@ -14,7 +14,7 @@ const options = {
   sign: true
 }
 
-const swapID = 0;
+const swapID = 4;
 
 const amount = 100;
 
@@ -29,10 +29,13 @@ function asset(amount) {
   return `${amount}.0000 EOS`;
 }
 
-async function hash(secret) {
-  const sha256 = await instantiateSha256()
+const fromHexString = hexString =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
-  const secretHash = binToHex(sha256.hash(hexToBin(secret)))
+async function hash(secret) {
+  const sha256 = bitcoin.crypto.sha256
+
+  const secretHash = sha256(fromHexString(secret))
 
   return secretHash
 }

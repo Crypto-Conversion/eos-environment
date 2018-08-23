@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "binaryen": "37.0.0",
-    "bitcoin-ts": "^1.2.0",
     "bitcoinjs-lib": "^3.3.2",
     "create-hash": "^1.2.0",
     "eosjs": "^15.0.3"
