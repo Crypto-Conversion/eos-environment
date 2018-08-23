@@ -1,25 +1,22 @@
-const ripemd160 = require('bitcoinjs-lib/src/crypto').ripemd160;
+const { binToHex, hexToBin, instantiateSha256 } = require("bitcoin-ts")
+
 const assert = require('assert')
 const eos = require('../eos')
 const swap = require('./swap')
 const config = require('./config.json')
 
+const eosOwner = 'sevenflash'
+const btcOwner = 'sevenflash53'
+
 const options = {
-  authorization: config.creator + '@active',
+  authorization: [`${eosOwner}@active`, `${btcOwner}@active`],
   broadcast: true,
   sign: true
 }
 
-const eosOwner = 'sevenflash'
-const btcOwner = 'sevenflash55'
-
-const lastID = 0;
-const swapID = lastID + 1;
+const swapID = 0;
 
 const amount = 100;
-
-const secret = hash('c0809ce9f484fdcdfb2d5aabd609768ce0374ee97a1a5618ce4cd3f16c00a078')
-const secretHash = hash(secret)
 
 const contract = config.account;
 
@@ -32,8 +29,12 @@ function asset(amount) {
   return `${amount}.0000 EOS`;
 }
 
-function hash(secret) {
-  return ripemd160(Buffer.from(secret, 'hex')).toString('hex')
+async function hash(secret) {
+  const sha256 = await instantiateSha256()
+
+  const secretHash = binToHex(sha256.hash(hexToBin(secret)))
+
+  return secretHash
 }
 
 describe('swap', function() {
@@ -41,10 +42,13 @@ describe('swap', function() {
 
   before(async () => {
     this.contract = await swap()
+
+    this.secret = '9e7a0c24cb284ed7939e5d37901428fb1b293e56445c571a176fad2b948c0aaa'
+    this.secretHash = await hash(this.secret)
   });
 
   it('open atomic swap between btcOwner and eosOwner', async () => {
-    await this.contract.open(eosOwner, btcOwner, quantity(amount), secretHash, options);
+    await this.contract.open(eosOwner, btcOwner, asset(amount), this.secretHash, options);
   });
 
   it('check that swap was saved in the table', async () => {
@@ -61,13 +65,13 @@ describe('swap', function() {
     assert.equal(swap.eosOwner, eosOwner);
     assert.equal(swap.swapID, swapID);
     assert.equal(swap.secret, 0000000000000000000000000000000000000000);
-    assert.equal(swap.requiredDeposit, quantity(amount));
-    assert.equal(swap.currentDeposit, 0);
+    assert.equal(swap.requiredDeposit, asset(amount));
+    assert.equal(swap.currentDeposit, `0.0000 EOS`);
     assert.equal(swap.status, 0);
   });
 
   it('transfer funds to the contract with memo', async () => {
-    const result = await eos.transfer(eosOwner, 'swaponline11', asset(amount), swapID);
+    const result = await eos.transfer(eosOwner, config.account, asset(amount), swapID);
 
     assert.ok(result.transaction);
   });
@@ -85,9 +89,11 @@ describe('swap', function() {
     assert.equal(swap.status, 1);
   });
 
-  it('withdraw funds revealing the secret', async () => {
-    await this.contract.withdraw(swapID, secret, options);
-  });
+  it('withdraw', async () => {
+    const result = await this.contract.withdraw(swapID, this.secret, options)
+
+    console.log(result)
+  })
 
   it('refund funds instead of withdrawal', async () => {
     await this.contract.refund(swapID, options);
