@@ -16,6 +16,7 @@ namespace eosio {
                 checksum256 secretHash;
                 checksum256 secret;
                 uint8_t status = 0; // 0 = open, 1 = active, 2 = withdrawn, 3 = refunded
+                uint32_t createdAt;
 
                 uint64_t primary_key() const { return swapID; }
             };
@@ -30,7 +31,7 @@ namespace eosio {
             _this_contract(self)
             {}
 
-            const uint32_t TIMEOUT = 5*60;
+            const uint32_t LOCK_TIME = 5*60; // in seconds
 
             void open(account_name eosOwner, account_name btcOwner, asset quantity, checksum256& secretHash);
             void withdraw(uint64_t swapID, checksum256& secret);
@@ -64,6 +65,7 @@ namespace eosio {
                 item.currentDeposit = asset(0, symbol_type(S(4, EOS)));
                 item.secretHash = secretHash;
                 item.status = 0;
+                item.createdAt = now();
         });
     }
 
@@ -78,6 +80,8 @@ namespace eosio {
         eosio_assert(swapIterator->status != 0, "EOS Owner should deposit funds");
         eosio_assert(swapIterator->status != 2, "Funds was already withdrawn");
         eosio_assert(swapIterator->status != 3, "Funds was refunded");
+
+        eosio_assert(swapIterator->createdAt + LOCK_TIME > now(), "Refund phase");
 
         assert_sha256((char*)&secret, sizeof(secret), (const checksum256*)&swapIterator->secretHash);
 
@@ -108,6 +112,8 @@ namespace eosio {
 
         require_auth(swapIterator->eosOwner);
 
+        eosio_assert(swapIterator->createdAt + LOCK_TIME < now(), "Withdraw phase");
+
         account_name recipient = swapIterator->eosOwner;
         const asset& quantity = swapIterator->currentDeposit;
 
@@ -131,7 +137,7 @@ namespace eosio {
         auto swapIterator = _swaps.find(stoll(transfer.memo));
 
         eosio_assert(swapIterator != _swaps.end(), "Swap not found");
-        eosio_assert(swapIterator->status == 0, "Swap had been processed already");
+        eosio_assert(swapIterator->status == 0, "Swap was processed already");
 
         _swaps.modify(swapIterator, swapIterator->eosOwner, [&](auto& item) {
             item.currentDeposit += transfer.quantity;
